@@ -9,7 +9,11 @@ image_count = 10
 output = 'images'
 image_type = 'jpg'
 
-example = Image.open('other\\no_exist.png')
+exclude = 'exclude'
+
+def create_folder():
+    if not os.path.exists(output):
+        os.makedirs(output)
 
 def clear_images():
     for file in os.listdir(output):
@@ -34,12 +38,19 @@ def save_image(image, directory):
         res = requests.get(image)
         f.write(res.content)
 
-def check_not_exist(image):
+def check_exclude(image):
     img = Image.open(image)
 
-    return list(img.getdata()) == list(example.getdata())
+    for file in os.listdir(exclude):
+        example = Image.open(os.path.join(exclude, file))
+        if list(img.getdata()) == list(example.getdata()):
+            return True
 
+    return False
+
+create_folder()
 clear_images()
+
 print("Started saving images:")
 
 i = 0
@@ -51,7 +62,7 @@ while i < image_count:
     directory = output + '\image_' + str(i + 1) + '.' + image_type
     save_image(image, directory)
         
-    if (check_empty(directory) or check_not_exist(directory)):
+    if (check_empty(directory) or check_exclude(directory)):
         os.remove(directory)
     else:
         print("    Saved image #" + str(i + 1))
