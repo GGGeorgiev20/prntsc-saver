@@ -2,22 +2,27 @@ import cv2
 import os
 import requests
 import string
+from pathlib import Path
 from random import choice
 from PIL import Image
 
-image_count = 10
-output = 'images'
-image_type = 'jpg'
+IMAGE_COUNT = 10
+OUTPUT = 'images'
+IMAGE_TYPE = 'jpg'
 
-exclude = 'exclude'
+EXCLUDE = 'exclude'
 
 def create_folder():
-    if not os.path.exists(output):
-        os.makedirs(output)
+    if not Path(OUTPUT).exists():
+        os.makedirs(OUTPUT)
 
 def clear_images():
-    for file in os.listdir(output):
-        os.remove(os.path.join(output, file))
+    for file in os.listdir(OUTPUT):
+        os.remove(os.path.join(OUTPUT, file))
+
+def change_extensions():
+    for file in os.listdir(EXCLUDE):
+        os.rename(os.path.join(EXCLUDE, file), os.path.join(EXCLUDE, Path(file).stem + '.' + IMAGE_TYPE))
 
 def generate_id():
     numbers = '0123456789'
@@ -41,31 +46,35 @@ def save_image(image, directory):
 def check_exclude(image):
     img = Image.open(image)
 
-    for file in os.listdir(exclude):
-        example = Image.open(os.path.join(exclude, file))
+    for file in os.listdir(EXCLUDE):
+        example = Image.open(os.path.join(EXCLUDE, file))
         if list(img.getdata()) == list(example.getdata()):
             return True
 
     return False
 
-create_folder()
-clear_images()
+def main():
+    create_folder()
+    clear_images()
+    change_extensions()
 
-print("Started saving images:")
+    print("Started saving images:")
 
-i = 0
-while i < image_count:
-    id = generate_id()
+    i = 0
+    while i < IMAGE_COUNT:
+        id = generate_id()
 
-    image = 'https://i.imgur.com/' + id + '.jpg'
+        image = 'https://i.imgur.com/' + id + '.jpg'
 
-    directory = output + '\image_' + str(i + 1) + '.' + image_type
-    save_image(image, directory)
-        
-    if (check_empty(directory) or check_exclude(directory)):
-        os.remove(directory)
-    else:
-        print("    Saved image #" + str(i + 1))
-        i+=1
+        directory = OUTPUT + '\image_' + str(i + 1) + '.' + IMAGE_TYPE
+        save_image(image, directory)
+            
+        if (check_empty(directory) or check_exclude(directory)):
+            os.remove(directory)
+        else:
+            print("    Saved image #" + str(i + 1))
+            i+=1
 
-print("Finished saving images.")
+    print("Finished saving images.")
+
+main()
