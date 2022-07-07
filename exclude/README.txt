@@ -1,0 +1,1 @@
+You can add your own images here. The names and file extensions don't matter as they will be changed when you run the script. As to why there are so many images, that's because the script compares if the images are the same and some images have very little differences that the script can't check so it allows them. If you don't want an image just put it in here.

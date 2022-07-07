@@ -1,3 +1,4 @@
+from tkinter import N
 import cv2
 import os
 import requests
@@ -7,22 +8,32 @@ from random import choice
 from PIL import Image
 
 IMAGE_COUNT = 10
-OUTPUT = 'images'
 IMAGE_TYPE = 'jpg'
 
+OUTPUT = 'images'
 EXCLUDE = 'exclude'
 
-def create_folder():
+def create_folders():
     if not Path(OUTPUT).exists():
         os.makedirs(OUTPUT)
+    if not Path(EXCLUDE).exists():
+        os.makedirs(EXCLUDE)
 
 def clear_images():
     for file in os.listdir(OUTPUT):
         os.remove(os.path.join(OUTPUT, file))
 
 def change_extensions():
-    for file in os.listdir(EXCLUDE):
-        os.rename(os.path.join(EXCLUDE, file), os.path.join(EXCLUDE, Path(file).stem + '.' + IMAGE_TYPE))
+    name = ''
+    for i in range(2):
+        j = 0
+        for file in list(Path(EXCLUDE).iterdir()):
+            if file.suffix == '.txt':
+                continue
+            if i == 1:
+                name = 'exclude_'
+            os.rename(file, os.path.join(EXCLUDE, name + str(j) + '.' + IMAGE_TYPE))
+            j += 1
 
 def generate_id():
     numbers = '0123456789'
@@ -47,6 +58,8 @@ def check_exclude(image):
     img = Image.open(image)
 
     for file in os.listdir(EXCLUDE):
+        if Path(file).suffix == '.txt':
+            continue
         example = Image.open(os.path.join(EXCLUDE, file))
         if list(img.getdata()) == list(example.getdata()):
             return True
@@ -54,7 +67,7 @@ def check_exclude(image):
     return False
 
 def main():
-    create_folder()
+    create_folders()
     clear_images()
     change_extensions()
 
@@ -67,13 +80,17 @@ def main():
         image = 'https://i.imgur.com/' + id + '.jpg'
 
         directory = OUTPUT + '\image_' + str(i + 1) + '.' + IMAGE_TYPE
-        save_image(image, directory)
-            
-        if (check_empty(directory) or check_exclude(directory)):
-            os.remove(directory)
-        else:
-            print("    Saved image #" + str(i + 1))
-            i+=1
+        try:
+            save_image(image, directory)
+                
+            if (check_empty(directory) or check_exclude(directory)):
+                os.remove(directory)
+            else:
+                print("    Saved image #" + str(i + 1) + " (ID: " + id + ")")
+                i += 1
+        except:
+            print("    Error saving image #" + str(i + 1) + " (ID: " + id + ")")
+            print("    Trying again...")
 
     print("Finished saving images.")
 
