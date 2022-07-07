@@ -1,6 +1,4 @@
-from tkinter import N
 import cv2
-import os
 import requests
 import string
 from pathlib import Path
@@ -14,14 +12,12 @@ OUTPUT = 'images'
 EXCLUDE = 'exclude'
 
 def create_folders():
-    if not Path(OUTPUT).exists():
-        os.makedirs(OUTPUT)
-    if not Path(EXCLUDE).exists():
-        os.makedirs(EXCLUDE)
+    Path(OUTPUT).mkdir(exist_ok=True)
+    Path(EXCLUDE).mkdir(exist_ok=True)
 
 def clear_images():
-    for file in os.listdir(OUTPUT):
-        os.remove(os.path.join(OUTPUT, file))
+    for file in list(Path(OUTPUT).iterdir()):
+        file.unlink()
 
 def change_extensions():
     name = ''
@@ -32,35 +28,44 @@ def change_extensions():
                 continue
             if i == 1:
                 name = 'exclude_'
-            os.rename(file, os.path.join(EXCLUDE, name + str(j) + '.' + IMAGE_TYPE))
+            file.rename(Path(EXCLUDE) / (name + str(j) + '.' + IMAGE_TYPE))
             j += 1
 
 def generate_id():
     numbers = '0123456789'
     letters = string.ascii_lowercase
-    
-    random_numbers = ''.join(choice(numbers) for i in range(2))
-    random_letters = ''.join(choice(letters) for i in range(4))
 
-    return random_numbers + random_letters
+    random = []
+    for i in range(2):
+        random.append(choice(numbers))
+    for i in range(4):
+        random.append(choice(letters))
+
+    id = ''
+    for i in range(6):
+        symbol = choice(random)
+        id += symbol
+        random.remove(symbol)
+
+    return id
+
+def save_image(url, image):
+    with open(str(image), 'wb') as f:
+        res = requests.get(url)
+        f.write(res.content)
 
 def check_empty(image):
-    img = cv2.imread(image)
+    img = cv2.imread(str(image))
 
     return img is None
 
-def save_image(image, directory):
-    with open(directory, 'wb') as f:
-        res = requests.get(image)
-        f.write(res.content)
-
 def check_exclude(image):
-    img = Image.open(image)
+    img = Image.open(str(image))
 
-    for file in os.listdir(EXCLUDE):
-        if Path(file).suffix == '.txt':
+    for file in list(Path(EXCLUDE).iterdir()):
+        if file.suffix == '.txt':
             continue
-        example = Image.open(os.path.join(EXCLUDE, file))
+        example = Image.open(file)
         if list(img.getdata()) == list(example.getdata()):
             return True
 
@@ -77,20 +82,21 @@ def main():
     while i < IMAGE_COUNT:
         id = generate_id()
 
-        image = 'https://i.imgur.com/' + id + '.jpg'
+        url = 'https://i.imgur.com/' + id + '.jpg'
 
-        directory = OUTPUT + '\image_' + str(i + 1) + '.' + IMAGE_TYPE
+        directory = Path(OUTPUT) / (str(i + 1) + '_' + str(id) + '.' + IMAGE_TYPE)
+
         try:
-            save_image(image, directory)
+            save_image(url, directory)
                 
             if (check_empty(directory) or check_exclude(directory)):
-                os.remove(directory)
+                directory.unlink()
             else:
                 print("    Saved image #" + str(i + 1) + " (ID: " + id + ")")
                 i += 1
         except:
             print("    Error saving image #" + str(i + 1) + " (ID: " + id + ")")
-            print("    Trying again...")
+            print("    Generating new ID...")
 
     print("Finished saving images.")
 
