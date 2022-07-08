@@ -1,17 +1,29 @@
-import cv2
-import requests
 import string
 import time
 import math
+import json
+import cv2
+import requests
 from pathlib import Path
 from random import choice
 from PIL import Image
 
-IMAGE_COUNT = 50
-IMAGE_TYPE = 'jpg'
+json_file = 'properties.json'
 
-OUTPUT = 'images'
-EXCLUDE = 'exclude'
+def init():
+    load_json()
+    create_folders()
+    clear_images()
+    change_extensions()
+
+def load_json():
+    content = json.load(open(json_file))
+    global IMAGE_COUNT, IMAGE_TYPE, METHOD, OUTPUT, EXCLUDE
+    IMAGE_COUNT = content['image_count']
+    IMAGE_TYPE = content['image_type']
+    METHOD = content['method']
+    OUTPUT = content['output']
+    EXCLUDE = content['exclude']
 
 def create_folders():
     Path(OUTPUT).mkdir(exist_ok=True)
@@ -33,14 +45,34 @@ def change_extensions():
             file.rename(Path(EXCLUDE) / (name + str(j) + '.' + IMAGE_TYPE))
             j += 1
 
-def generate_id():
-    numbers = '0123456789'
-    letters = string.ascii_lowercase
-    
-    random_numbers = ''.join(choice(numbers) for i in range(2))
-    random_letters = ''.join(choice(letters) for i in range(4))
+def generate_id(method):
+    id = ''
 
-    return random_numbers + random_letters
+    if method == 1:
+        numbers = '0123456789'
+        letters = string.ascii_lowercase
+        
+        random_numbers = ''.join(choice(numbers) for i in range(2))
+        random_letters = ''.join(choice(letters) for i in range(4))
+
+        id = random_numbers + random_letters
+    
+    elif method == 2:
+        numbers = '0123456789'
+        letters = string.ascii_lowercase
+
+        random = []
+        for i in range(2):
+            random.append(choice(numbers))
+        for i in range(4):
+            random.append(choice(letters))
+
+        for i in range(6):
+            symbol = choice(random)
+            id += symbol
+            random.remove(symbol)
+
+    return id
 
 def save_image(url, image):
     with open(str(image), 'wb') as f:
@@ -65,16 +97,14 @@ def check_exclude(image):
     return False
 
 def main():
-    create_folders()
-    clear_images()
-    change_extensions()
+    init()
 
     print("Started saving images:")
     start_time = time.time()
 
     i = 0
     while i < IMAGE_COUNT:
-        id = generate_id()
+        id = generate_id(METHOD)
 
         url = 'https://i.imgur.com/' + id + '.jpg'
 
@@ -86,16 +116,17 @@ def main():
             if (check_empty(directory) or check_exclude(directory)):
                 directory.unlink()
             else:
-                print("    Saved image #" + str(i + 1) + " (ID: " + id + ")")
+                print(f"    Saved image #{i + 1} (ID: {id})")
                 i += 1
         except:
-            print("    Error saving image #" + str(i + 1) + " (ID: " + id + ")")
+            print(f"    Error saving image #{i + 1} (ID: {id})")
             print("    Generating new ID...")
+            directory.unlink()
 
     print("Finished saving images.")
     end_time = time.time()
 
     time_passed = end_time - start_time
-    print("Time: 0" + str(math.floor(time_passed / 60)) + ":" + str(int(time_passed % 60)))
+    print(f"Time: {math.floor(time_passed / 60):02}:{round(time_passed % 60):02}")
 
 main()
