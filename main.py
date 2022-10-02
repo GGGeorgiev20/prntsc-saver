@@ -4,8 +4,8 @@ import math
 import json
 import cv2
 import requests
+import random
 from pathlib import Path
-from random import choice
 from PIL import Image
 
 json_file = 'properties.json'
@@ -48,29 +48,9 @@ def change_extensions():
 def generate_id(method):
     id = ''
 
-    if method == 1:
-        numbers = '0123456789'
-        letters = string.ascii_lowercase
-        
-        random_numbers = ''.join(choice(numbers) for i in range(2))
-        random_letters = ''.join(choice(letters) for i in range(4))
-
-        id = random_numbers + random_letters
+    characters = '0123456789' + string.ascii_lowercase
     
-    elif method == 2:
-        numbers = '0123456789'
-        letters = string.ascii_lowercase
-
-        random = []
-        for i in range(2):
-            random.append(choice(numbers))
-        for i in range(4):
-            random.append(choice(letters))
-
-        for i in range(6):
-            symbol = choice(random)
-            id += symbol
-            random.remove(symbol)
+    id = ''.join(random.sample(characters, 6))
 
     return id
 

@@ -8,7 +8,7 @@ The images are obtained online from a site, which can be used by anyone and is n
 
 ## ⚙️ Properties
 ### 🚀 ID Generation
-There are currently 2 methods for generating IDs. The first one selects an image from a smaller pool. The second one selects an image from a larger pool but is quiet slower than the first one. 
+The method used for generating an id is simple. There's an array of all characters. It chooses 6 random characters from the array and searches for the image with that id. If it finds one and it isn't in the exclude folder, it saves it. Else it generates a new id and repeates. The average time for finding an image is around 4.2 seconds.
 
 ### 🔒 Exclude
 All images in the exclude folder will be avoided from being selected. You can even add your own images!
