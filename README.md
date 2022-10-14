@@ -21,4 +21,4 @@ You can edit all properties of the script in the properties.json file.
 <a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="50" height="50"/></a>
 
 ## 🕹️ How to use
-To use the script make sure you have Python installed. If you don't, click on the python icon and once you are in the installer, make sure to tick the `Add Python to PATH` box. If you do, you need to go into cmd and type `pip install {module}`. The modules you need are `opencv-python`, `requests`, `pathlib` and `pillow`. Once you've done that, just open the folder in cmd and type `python main.py` or if you want to, you can do the same in vscode.
+To use the script make sure you have Python installed. If you don't, click on the python icon and once you are in the installer, make sure to tick the `Add Python to PATH` box. Once you've done that, just open the folder in cmd and type `python main.py` or if you want to, you can do the same in vscode.
