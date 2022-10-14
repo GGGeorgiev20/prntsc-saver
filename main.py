@@ -2,13 +2,23 @@ import string
 import time
 import math
 import json
-import cv2
-import requests
 import random
+import os
 from pathlib import Path
-from PIL import Image
 
 json_file = 'properties.json'
+
+try:
+    import requests
+    import cv2
+    from PIL import Image
+except ModuleNotFoundError:
+    os.system('pip install requests')
+    os.system('pip install opencv-python')
+    os.system('pip install pillow')
+    import requests
+    import cv2
+    from PIL import Image
 
 def init():
     load_json()
@@ -18,10 +28,9 @@ def init():
 
 def load_json():
     content = json.load(open(json_file))
-    global IMAGE_COUNT, IMAGE_TYPE, METHOD, OUTPUT, EXCLUDE
+    global IMAGE_COUNT, IMAGE_TYPE, OUTPUT, EXCLUDE
     IMAGE_COUNT = content['image_count']
     IMAGE_TYPE = content['image_type']
-    METHOD = content['method']
     OUTPUT = content['output']
     EXCLUDE = content['exclude']
 
@@ -45,7 +54,7 @@ def change_extensions():
             file.rename(Path(EXCLUDE) / (name + str(j) + '.' + IMAGE_TYPE))
             j += 1
 
-def generate_id(method):
+def generate_id():
     id = ''
 
     characters = '0123456789' + string.ascii_lowercase
@@ -84,7 +93,7 @@ def main():
 
     i = 0
     while i < IMAGE_COUNT:
-        id = generate_id(METHOD)
+        id = generate_id()
 
         url = 'https://i.imgur.com/' + id + '.jpg'
 
